@@ -1,0 +1,203 @@
+
+# %%
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+# %%
+def df_summary(df):
+  """
+  (dataframe) -> dataframe
+  This function returns a summary dataframe that summarizes elements of the input dataframe.
+  The summary dataframe includes the following information:
+  - dtype: the data type of each column
+  - n_missing: the number of missing values in each column
+  - pct_missing: the percentage of missing values in each column
+  - n_unique: the number of unique values in each column
+  """
+  summary = pd.DataFrame({
+      "dtype": df.dtypes,
+      "n_missing": df.isna().sum(),
+      "pct_missing": df.isna().mean().round(3),
+      "n_unique": df.nunique()
+  })
+
+  # basic stats for numeric columns
+  numeric_cols = df.select_dtypes(include=np.number).columns
+  desc = df[numeric_cols].describe().T
+
+  summary = summary.join(desc, how="left")
+  return summary
+
+pd.set_option("display.float_format", "{:.2f}".format)
+
+# %%
+org = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/dim_organization.csv")
+patient = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/dim_patient.csv")
+provider = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/dim_provider.csv")
+encounter = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/fact_encounter.csv")
+medication = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/fact_medication.csv")
+observation = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/fact_observation.csv")
+patient_obv = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/fact_patient_observation.csv")
+pat_obv_features = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/patient_observation_features.csv")
+
+
+# %%
+# Create a list of (name, dataframe) pairs
+tables_with_names = [
+    ("org", org),
+    ("patient", patient),
+    ("provider", provider),
+    ("encounter", encounter),
+    ("medication", medication),
+    ("observation", observation),
+    ("patient_obv", patient_obv),
+    ("pat_obv_features", pat_obv_features)
+]
+
+# For loop that iterates over the dataframes to print a summary of information
+for name, df in tables_with_names:
+  print(f"--- Summary for DataFrame: {name} ---")
+  print(df_summary(df))
+  print("\n") # Add a newline for better separation between summaries
+
+# %%
+# Joining patient information we want to keep information for all patients with encounters
+patient.dtypes
+patient['birthdate'] = pd.to_datetime(patient['birthdate']).dt.date
+print(patient.dtypes)
+encounter['start'] = pd.to_datetime(encounter['start'])
+encounter['stop'] = pd.to_datetime(encounter['stop'])
+encounter["start_month"] = encounter["start"].dt.strftime("%Y-%m")
+encounter["stop_month"] = encounter["stop"].dt.strftime("%Y-%m")
+
+all_patient = patient.merge(encounter, on='patient_id', how='inner').merge(org, on='organization_id', how='left').merge(patient_obv, on = 'encounter_id', how = 'left')
+
+df_summary(all_patient)
+
+# %%
+sns.boxplot(data = all_patient, x = 'length_of_stay_hours')
+plt.title("Hours of Encounter Distribution")
+plt.xlabel("Hours")
+plt.ylabel("Frequency")
+
+# %%
+# Discovered Outliers will now be removed
+all_patient = all_patient[all_patient['length_of_stay_hours'] < 120] # 120 was selected as the general range of stay is around 3 - 5 days according to ChatGPT
+sns.histplot(data = all_patient, x = 'length_of_stay_hours')
+
+# %%
+ax = sns.countplot(data = all_patient, x = 'gender_x')
+plt.title("Gender Distribution")
+
+# Add percentage labels
+total = len(all_patient)
+for p in ax.patches:
+    percentage = f'{100 * p.get_height() / total:.1f}%'
+    x = p.get_x() + p.get_width() / 2
+    y = p.get_height()
+    ax.annotate(percentage, (x, y), ha='center', va='bottom')
+
+# %%
+plt.figure(figsize = (16,16))
+ax = sns.countplot(data = all_patient, y = 'description', hue = 'gender_x')
+plt.xticks(rotation = 90)
+plt.title("Encounter Code Description by Gender")
+plt.xlabel("Encounter Code Description")
+plt.xlabel("Frequency")
+plt.legend(title = 'Gender', loc = 'upper right')
+
+# Add percentage labels
+total = len(all_patient)
+for p in ax.patches:
+    width = p.get_width()
+    if width > 0:
+        percentage = f'{100 * width / total:.1f}%'
+        x = width
+        y = p.get_y() + p.get_height() / 2
+        ax.annotate(percentage, (x, y), ha='left', va='center', xytext=(3, 0), textcoords='offset points')
+
+# %%
+plt.figure(figsize = (16,16))
+sns.boxplot(data = all_patient, x = 'payer_coverage')
+plt.title("Total Payer Coverage Distribution")
+plt.xlabel("Total Claim Cost")
+plt.ylabel("Frequency")
+
+# %%
+
+sns.scatterplot(data = all_patient, y = 'payer_coverage', x = 'age_years_x')
+plt.title("Length of Stay vs Total Claim Cost")
+plt.xlabel("Length of Stay (hours)")
+
+# %%
+sns.barplot(data = all_patient, x = 'gender_x', y = 'payer_coverage')
+plt.title("Payer Coverage Distribution")
+plt.xlabel("Payer Coverage")
+
+# %%
+all_patient.dtypes
+
+# %%
+# BMI group distribution for meds
+conditions = [
+    df["Body Mass Index"] < 18.5,
+    (df["Body Mass Index"] >= 18.5) & (df["Body Mass Index"] < 25),
+    (df["Body Mass Index"] >= 25) & (df["Body Mass Index"] < 30),
+    df["Body Mass Index"] >= 30
+]
+
+choices = ["Underweight", "Normal", "Overweight", "Obese"]
+
+pat_obv_features["bmi_category"] = np.select(conditions, choices)
+patient_meds_features = pat_obv_features.merge(medication, on = 'patient_id', how = 'left')
+
+
+# %%
+patient_meds_features
+
+# %%
+patient_meds_features = patient_meds_features.dropna(subset="Body Mass Index").reset_index(drop = True)
+sns.barplot(data = patient_meds_features, x = 'bmi_category', y = 'totalcost', errorbar = ('ci', False))
+plt.title("Medication Total Cost by BMI Categorization")
+plt.xlabel("BMI Category")
+plt.ylabel("Average Total Cost")
+plt.show()
+
+# %%
+# Explore patient data
+sns.histplot(data = pat_obv_features, x = 'Body Mass Index')
+plt.title("BMI Distribution")
+plt.show()
+
+# %%
+# Join observations and observation features
+all_obv = patient_obv.merge(pat_obv_features, on = 'patient_id', how = 'left')
+
+# %%
+sns.scatterplot(data = all_obv.dropna(subset = ["Body Mass Index"]), x = 'age_years', y = 'Glucose', hue = 'bmi_category')
+plt.title("Correlation Between Age and Glucose Level by ")
+plt.legend(title = 'BMI Category', loc = 'upper right')
+plt.show()
+
+# %%
+# Is there a trend in encounter dates?
+encounter_summary = (
+    encounter.groupby("start_month")
+    .size()
+    .reset_index(name="count")
+)
+
+encounter_summary
+
+# %%
+encounter_summary.plot(kind = 'line',x = 'start_month')
+plt.title("Timeseries Visualization of Encounters by Start Date")
+plt.show()
+
+# %%
+# Top 5 Utilizations by Organization
+print(org[['name','utilization']].sort_values('utilization',ascending = False).head(5))
+
+
