@@ -6,10 +6,11 @@ clean analytical tables and loads them into BigQuery.
 The project demonstrates:
 
 - Ingestion of CSV + FHIR JSON files  
-- Cleaning, transformation, and validation in Python (pandas)  
+- Cleaning, transformation, and validation in Python (pandas)
+- Visualization and exploratory data analysis in Python 
 - Creation of fact and dimension tables  
-- Optional loading to BigQuery for analysis  
-- Basic data governance (versioning, logging, and documentation)
+- loading to BigQuery for analysis  
+- data governance (versioning, logging, and documentation)
 
 ---
 
@@ -79,15 +80,15 @@ hospital_data/
 │   │   │   └── organizations.csv
 │   │   └── json/
 │   │       └── observations/*.json      # FHIR Observation bundles
-│   └── processed/                       # pipeline outputs (created by script)
+│   └── processed/                       # pipeline outputs 
 ├── creds/
-│   └── final-project-ores5160-70832cc9a26f.json   # service account (git-ignored)
+│   └── final-project-ores5160-70832cc9a26f.json   
 ├── src/
 │   ├── config.py          # paths (RAW_DIR, PROCESSED_DIR, etc.)
 │   ├── ingest.py          # all load_* functions
 │   ├── transform.py       # all clean_* and join/pivot functions
 │   ├── validate.py        # validation & logging
-│   ├── utils.py           # ensure_dir, small helpers
+│   ├── utils.py          
 │   └── __init__.py
 ├── run_pipeline.py        # runs full ingest → transform → validate → write
 ├── requirements.txt
