@@ -5,4 +5,9 @@ hospitals/
 __pycache__/
 
 # Jupyter notebook checkpoints
+*.ipynb
 .ipynb_checkpoints/
+
+# Do NOT commit credentials
+creds/
+*.json

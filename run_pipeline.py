@@ -1,5 +1,8 @@
 from src.config import PROCESSED_DIR
 from src.utils import ensure_dir
+from src.validate import validate_dim_patient, validate_fact_encounter
+from pathlib import Path
+import pandas as pd
 
 from src.ingest import (
     load_patients_csv,
@@ -54,6 +57,14 @@ def main():
     dim_organization = clean_organizations(orgs_raw)
     fact_medication = clean_medications(meds_raw)
 
+    # ---------- 3.5) Validate key tables BEFORE writing ----------
+    ok_patients = validate_dim_patient(dim_patient)
+    ok_encounters = validate_fact_encounter(fact_encounter)
+
+    if not (ok_patients and ok_encounters):
+        print("❌ Validation failed. Check logs/validation.log. Skipping write to processed.")
+        return
+
     # ---------- 4) Clean Observations + join to patients ----------
     obs_clean = clean_observations_fhir(obs_raw)
     fact_patient_obs = join_patients_observations(dim_patient, obs_clean)
@@ -80,3 +91,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+

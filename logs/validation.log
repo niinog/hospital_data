@@ -1,0 +1,23 @@
+2025-12-12 15:04:19 | WARNING | dim_patient: age_years outside [0, 120]
+2025-12-12 15:04:19 | ERROR | Validation for dim_patient: passed=False, errors=1
+2025-12-12 15:04:19 | ERROR |   - dim_patient: age_years outside [0, 120]
+2025-12-12 15:07:10 | INFO | Starting validation for dim_patient (rows=1163)
+2025-12-12 15:07:10 | ERROR | dim_patient: 23 rows have age_years outside [0, 120]
+2025-12-12 15:07:10 | ERROR | dim_patient validation FAILED with 1 issue(s)
+2025-12-12 15:07:10 | INFO | Starting validation for fact_encounter (rows=61459)
+2025-12-12 15:07:10 | ERROR | fact_encounter: unexpected error during validation: Cannot interpret 'datetime64[ns, UTC]' as a data type
+2025-12-12 15:07:10 | ERROR | Unexpected error while validating fact_encounter
+Traceback (most recent call last):
+  File "/Users/Nino/hospital_data/src/validate.py", line 204, in validate_fact_encounter
+    if np.issubdtype(df["start"].dtype, np.datetime64) and np.issubdtype(
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/Nino/hospital_data/hospitals/lib/python3.11/site-packages/numpy/_core/numerictypes.py", line 534, in issubdtype
+    arg1 = dtype(arg1).type
+           ^^^^^^^^^^^
+TypeError: Cannot interpret 'datetime64[ns, UTC]' as a data type
+2025-12-12 15:07:10 | ERROR | fact_encounter validation FAILED with 1 issue(s)
+2025-12-12 15:10:31 | INFO | Starting validation for dim_patient (rows=1163)
+2025-12-12 15:10:31 | WARNING | dim_patient: 23 rows have age_years outside [0, 120] (warning only, synthetic data)
+2025-12-12 15:10:31 | INFO | dim_patient validation PASSED
+2025-12-12 15:10:31 | INFO | Starting validation for fact_encounter (rows=61459)
+2025-12-12 15:10:31 | INFO | fact_encounter validation PASSED

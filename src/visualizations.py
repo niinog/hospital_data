@@ -33,14 +33,16 @@ def df_summary(df):
 pd.set_option("display.float_format", "{:.2f}".format)
 
 # %%
-org = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/dim_organization.csv")
-patient = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/dim_patient.csv")
-provider = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/dim_provider.csv")
-encounter = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/fact_encounter.csv")
-medication = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/fact_medication.csv")
-observation = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/fact_observation.csv")
-patient_obv = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/fact_patient_observation.csv")
-pat_obv_features = pd.read_csv("https://raw.githubusercontent.com/niinog/hospital_data/refs/heads/main/data/processed/patient_observation_features.csv")
+
+org = pd.read_csv("data/processed/dim_organization.csv")
+patient = pd.read_csv("data/processed/dim_patient.csv")
+provider = pd.read_csv("data/processed/dim_provider.csv")
+encounter = pd.read_csv("data/processed/fact_encounter.csv")
+medication = pd.read_csv("data/processed/fact_medication.csv")
+observation = pd.read_csv("data/processed/fact_observation.csv")
+patient_obv = pd.read_csv("data/processed/fact_patient_observation.csv")
+pat_obv_features = pd.read_csv("data/processed/patient_observation_features.csv")
+
 
 
 # %%
