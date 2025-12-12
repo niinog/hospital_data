@@ -63,6 +63,7 @@ Output (run_pipeline.py)
 
 Load to BigQuery
     └── Dataset: final-project-ores5160.patient_analysis
+```
 
 ## 3. Repository Structure
 
@@ -92,4 +93,13 @@ hospital_data/
 ├── requirements.txt
 ├── README.md
 └── .gitignore
+```
+## 4. Environment & Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/niinog/hospital_data.git
+   cd hospital_data
+```
 
