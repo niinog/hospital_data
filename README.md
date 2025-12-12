@@ -65,6 +65,8 @@ Load to BigQuery
     └── Dataset: final-project-ores5160.patient_analysis
 
 ## 3. Repository Structure
+
+```text
 hospital_data/
 ├── data/
 │   ├── raw/
@@ -90,3 +92,4 @@ hospital_data/
 ├── requirements.txt
 ├── README.md
 └── .gitignore
+
